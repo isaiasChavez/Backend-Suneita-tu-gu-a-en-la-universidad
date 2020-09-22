@@ -16,6 +16,7 @@ app.use(express.json({ extended: true }));
 //RUTAS
 app.use("/api/users", require("./routes/usuarios"));
 app.use("/api/auth", require("./routes/auth"));
+app.use("/api/rentas", require("./routes/rentas"));
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
