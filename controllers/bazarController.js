@@ -1,41 +1,45 @@
-const Renta = require("../models/Rentas");
+const ProductoBazar = require("../models/ProductoBazarModel");
 const { validationResult } = require("express-validator");
 const Usuario = require("../models/Usuario");
 
-exports.crearRenta = (req, res) => {
+exports.crearProducto = (req, res) => {
   console.log(req.body);
   //Revisar si hay errores
   const errores = validationResult(req);
-  console.log(errores, "los errores");
   if (!errores.isEmpty()) {
     console.log(errores.array());
-    return res.status(400).json({ errores: errores.array() });
+    return res.status(400).json({
+      msg: "Hubo un error al comprobar los datos",
+      errores: errores.array(),
+    });
   }
 
   try {
     //Crear un nuevo poyecto
-    const renta = new Renta(req.body);
+    const producto = new ProductoBazar(req.body);
 
     //Guardar el creador via JWT, el que está autenticado
 
-    renta.creador = req.usuario.id;
+    producto.creador = req.usuario.id;
 
-    renta.save();
+    producto.save();
     console.log("Creo que se ha guardado bien");
-    res.json({ msg: "Se ha publicado con exito", renta });
+    res.json({ msg: "Se ha publicado con exito", producto });
   } catch (error) {
     console.log("Error:", error);
-    res.status(500).send("Hubo un error");
+    res.status(500).send("Hubo un error al ingresar el producto");
   }
 };
 
 //Obtiene todos los proyectos del usuario que se encuentra autenticado
-exports.obtenerRentasUsuario = async (req, res) => {
+exports.obtenerProductosUsuario = async (req, res) => {
   try {
-    const rentas = await Renta.find({ creador: req.usuario.id }).sort({
+    const productos = await ProductoBazar.find({
+      creador: req.usuario.id,
+    }).sort({
       creador: -1,
     });
-    res.json({ rentas });
+    res.json({ productos });
   } catch (error) {
     console.log("Error al extraer las rentas de un usuario");
     console.log(error);
@@ -43,34 +47,34 @@ exports.obtenerRentasUsuario = async (req, res) => {
     res.status(500).send("hubo un error al extraer las rentas de un usuario");
   }
 };
-exports.obtenerRentas = async (req, res) => {
+exports.obtenerProductos = async (req, res) => {
   try {
-    const rentas = await Renta.find();
-    res.json({ rentas });
+    const productos = await ProductoBazar.find();
+    res.json({ productos });
   } catch (error) {
     console.log(error);
 
-    res.status(500).send("hubo un error al extraer las rentas");
+    res.status(500).send("hubo un error al extraer los productos");
   }
 };
 
-exports.eliminarRenta = async (req, res) => {
+exports.eliminarProducto = async (req, res) => {
   //Revisar el id para saber si la renta existe o no
   try {
-    let renta = await Renta.findById(req.params.id);
+    let producto = await ProductoBazar.findById(req.params.id);
 
-    if (!renta) {
-      return res.status(404).json({ msg: "Renta no encontrada no encontrado" });
+    if (!producto) {
+      return res.status(404).json({ msg: "Producto no encontrado" });
     }
 
     //Verificar el que creador del proyecto sea la persona que está autenticada
-    if (renta.creador.toString() != req.usuario.id) {
+    if (producto.creador.toString() != req.usuario.id) {
       return res.status(401).json({ msg: "No autorizado" });
     }
 
     //Eliminar el proyecto
-    await Renta.findOneAndRemove({ _id: req.params.id });
-    res.json({ msg: "Renta eliminada eliminada" });
+    await ProductoBazar.findOneAndRemove({ _id: req.params.id });
+    res.json({ msg: "Producto eliminado" });
   } catch (error) {
     console.log(error);
     res.status(500).send("hubo un error al eliminar en el servidor");
@@ -79,18 +83,19 @@ exports.eliminarRenta = async (req, res) => {
 
 //Actualiza un proyecto
 
-exports.actualizaRenta = async (req, res) => {
+exports.actualizaProducto = async (req, res) => {
   try {
     const { creador } = req.body;
     console.log(req.body);
-    let rentaExiste = await Renta.findById(req.params.id);
+    let productoExiste = await ProductoBazar.findById(req.params.id);
 
-    if (!rentaExiste) {
+    if (!productoExiste) {
       return res.status(404).json({
-        msg: "No existe la renta seleccionada, revise o avise de este error.",
+        msg:
+          "No existe el producto seleccionado, revise o avise de este error.",
       });
     }
-    //Verificar que el usuario sea dueño de la renta
+    //Verificar que el usuario sea dueño del producto
 
     const existeUsuario = await Usuario.findById(creador);
     if (existeUsuario._id.toString() != req.usuario.id) {
@@ -99,13 +104,13 @@ exports.actualizaRenta = async (req, res) => {
         .json({ msg: "No estás autorizado para editar rentas ajenas" });
     }
 
-    rentaExiste = await Renta.findByIdAndUpdate(
+    productoExiste = await ProductoBazar.findByIdAndUpdate(
       { _id: req.params.id },
       req.body,
       { new: true }
     );
 
-    res.json({ msg: "renta actualizada", renta: rentaExiste });
+    res.json({ msg: "Producto actualizado", producto: productoExiste });
   } catch (error) {
     console.log(error);
   }

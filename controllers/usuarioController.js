@@ -9,19 +9,22 @@ exports.crearUsuario = async (req, res) => {
     return res.status(400).json({ errores: errores.array() });
   }
 
-  const { email, password } = req.body;
+  const { email, password, username } = req.body;
 
   //Validamos que el usuario y correo sean unicos
 
   try {
-    let usuario = await Usuario.findOne({ email });
-
-    if (usuario) {
+    let uniqueEmail = await Usuario.findOne({ email });
+    let uniqueUsername = await Usuario.findOne({ username });
+    if (uniqueUsername) {
       return res.status(400).json({ msg: "El usuario ya existe" });
+    }
+    if (uniqueEmail) {
+      return res.status(400).json({ msg: "El correo ya está registrado" });
     }
     //crear el nuevo usuario
 
-    usuario = new Usuario(req.body);
+    let usuario = new Usuario(req.body);
 
     //Hashear el password
 

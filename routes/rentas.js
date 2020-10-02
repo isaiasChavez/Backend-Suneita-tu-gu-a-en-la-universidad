@@ -3,13 +3,20 @@ const router = express.Router();
 const { check } = require("express-validator");
 const RentasController = require("../controllers/rentasController");
 const auth = require("../middleware/auth");
-const { route } = require("./usuarios");
 
 router.post(
   "/",
   auth,
   [
+    check("titulo", "Falta el campo tipo cuarto").not().isEmpty().isString(),
+    check("username", "Falta el campo username").not().isEmpty().isString(),
+    check("creador", "Falta el campo creador").not().isEmpty(),
     check("tipoCuarto", "Falta el campo tipo cuarto")
+      .not()
+      .isEmpty()
+      .isString(),
+
+    check("descripcion", "Falta el campo tipo cuarto")
       .not()
       .isEmpty()
       .isString(),
@@ -19,19 +26,45 @@ router.post(
       .isEmpty(),
     check("tipobano", "Falta el tipo de baño").isString().not().isEmpty(),
     check("precio", "Falta el precio").isNumeric().not().isEmpty(),
+
     check("tipocontrato", "Falta el tipo de contrato")
       .isString()
       .not()
       .isEmpty(),
+
+    check("mascotas", "Falta las mascotas").isBoolean().not().isEmpty(),
+
+    check("soloestudiantes", "Falta soloestudiantes")
+      .isBoolean()
+      .not()
+      .isEmpty(),
+
+    check("mascotas", "Falta las mascotas").isBoolean().not().isEmpty(),
+
+    check("medidascuarto", "Falta las medidascuarto").not().isEmpty(),
+
+    check("luzincluida", "Falta la luzincluida").isBoolean().not().isEmpty(),
+
+    check("deposito", "Falta el deposito").isString().not().isEmpty(),
+
+    check("asentamiento", "Falta el asentamiento").isString().not().isEmpty(),
+    check("numeroexterior", "Falta el numero exterior")
+      .isNumeric()
+      .not()
+      .isEmpty(),
+
     check("estado", "Falta el estado").isString().not().isEmpty(),
     check("direccion", "Falta la direccion").isString().not().isEmpty(),
     check("ciudad", "Falta la ciudad").isString().not().isEmpty(),
     check("codigopostal", "Falta el codigo postal").isString().not().isEmpty(),
+    check("contacto", "Falta el contacto").isNumeric().not().isEmpty(),
   ],
   RentasController.crearRenta
 );
-router.get("/", auth, RentasController.obtenerRentas);
+router.get("/", RentasController.obtenerRentas);
+router.get("/user", auth, RentasController.obtenerRentasUsuario);
 
-router.delete("/:id", auth, RentasController.obtenerRentas);
+router.delete("/:id", auth, RentasController.eliminarRenta);
+router.put("/:id", auth, RentasController.actualizaRenta);
 
 module.exports = router;

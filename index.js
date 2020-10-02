@@ -17,6 +17,7 @@ app.use(express.json({ extended: true }));
 app.use("/api/users", require("./routes/usuarios"));
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/rentas", require("./routes/rentas"));
+app.use("/api/bazar", require("./routes/bazarRoutes"));
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
