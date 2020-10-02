@@ -4,7 +4,8 @@
   "description": "Backend que se comunicará con la aplicación frontend realizada con react. Aquí usaré nodeja",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon ."
+    "dev": "nodemon .",
+    "start": "node ."
   },
   "author": "Isaias Chávez",
   "license": "ISC",
