@@ -1,12 +1,18 @@
 const Renta = require("../models/Rentas");
+const ImagesRenta = require("../models/ImagesRenta");
 const { validationResult } = require("express-validator");
 const Usuario = require("../models/Usuario");
+const cloudinary = require("cloudinary");
 
-exports.crearRenta = (req, res) => {
-  console.log(req.body);
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+exports.crearRenta = async (req, res) => {
   //Revisar si hay errores
   const errores = validationResult(req);
-  console.log(errores, "los errores");
   if (!errores.isEmpty()) {
     console.log(errores.array());
     return res.status(400).json({ errores: errores.array() });
@@ -15,17 +21,86 @@ exports.crearRenta = (req, res) => {
   try {
     //Crear un nuevo poyecto
     const renta = new Renta(req.body);
-
     //Guardar el creador via JWT, el que está autenticado
 
+    console.log(renta);
     renta.creador = req.usuario.id;
-
-    renta.save();
+    await renta.save();
     console.log("Creo que se ha guardado bien");
     res.json({ msg: "Se ha publicado con exito", renta });
   } catch (error) {
     console.log("Error:", error);
     res.status(500).send("Hubo un error");
+  }
+};
+exports.subirImagenes = async (req, res) => {
+  const { renta_id, creador_id, titulo } = req.body;
+  let result = null;
+  let result1 = null;
+  let result2 = null;
+  let result3 = null;
+
+  let images = [];
+
+  if (req.files[0]) {
+    result = await cloudinary.v2.uploader.upload(req.files[0].path);
+  }
+  if (req.files[1]) {
+    result1 = await cloudinary.v2.uploader.upload(req.files[1].path);
+  }
+  if (req.files[2]) {
+    result2 = await cloudinary.v2.uploader.upload(req.files[2].path);
+  }
+  if (req.files[3]) {
+    result3 = await cloudinary.v2.uploader.upload(req.files[3].path);
+  }
+
+  images.push({
+    title: titulo,
+    imageUrl: result.url,
+    public_id: result.public_id,
+  });
+  images.push({
+    title: titulo,
+    imageUrl: result1.url,
+    public_id: result1.public_id,
+  });
+  images.push({
+    title: titulo,
+    imageUrl: result2.url,
+    public_id: result2.public_id,
+  });
+  images.push({
+    title: titulo,
+    imageUrl: result3.url,
+    public_id: result3.public_id,
+  });
+
+  //Falta verificar que el id que mandan corresponde a la persona que está logueada
+  const nuevasImagenes = {
+    renta_id,
+    creador_id,
+    titulo,
+    images,
+  };
+  const imagenes = new ImagesRenta(nuevasImagenes);
+
+  await imagenes.save();
+  res.json({
+    msg: "imagenes subidas correctamente",
+    imagenes,
+  });
+};
+
+exports.obtenerImagenes = async (req, res) => {
+  try {
+    const imagenes = await ImagesRenta.find({ renta_id: req.params.id });
+    res.json({ msg: "imagenes obtenidas corectamente", imagenes });
+  } catch (error) {
+    console.log("Error al extraer las rentas de un usuario");
+    console.log(error);
+
+    res.status(500).send("hubo un error al extraer las rentas de un usuario");
   }
 };
 

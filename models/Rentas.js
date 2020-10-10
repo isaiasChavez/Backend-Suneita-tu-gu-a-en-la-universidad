@@ -26,8 +26,8 @@ const RentaSchema = mongoose.Schema({
   soloestudiantes: { type: Boolean, required: true },
   mascotas: { type: Boolean, required: true },
   medidascuarto: {
-    largo: { type: Number, required: true },
-    ancho: { type: Number, required: true },
+    largo: { type: Number },
+    ancho: { type: Number },
   },
 
   tipobano: { type: String, required: true },
@@ -49,6 +49,10 @@ const RentaSchema = mongoose.Schema({
   creador: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Usuario",
+  },
+  created_at: {
+    type: Date,
+    default: Date.now(),
   },
   username: {
     type: String,

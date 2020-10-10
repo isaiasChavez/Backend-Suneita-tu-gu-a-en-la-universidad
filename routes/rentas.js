@@ -1,12 +1,32 @@
 const express = require("express");
+const multer = require("multer");
 const router = express.Router();
 const { check } = require("express-validator");
 const RentasController = require("../controllers/rentasController");
 const auth = require("../middleware/auth");
+const path = require("path");
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, "../public/uploads/"),
+  filename: (req, file, cb) => {
+    cb(null, new Date().getTime() + path.extname(file.originalname));
+  },
+  fileSize: 1000000, // 1MB
+  fileFilter(req, file, next) {
+    const isPhoto = file.mimetype.startsWith("image/");
+    if (isPhoto) {
+      next(null, true);
+    } else {
+      next({ message: "El tipo de archivo no es válido" }, false);
+    }
+  },
+});
+
+const upload = multer({ storage });
 
 router.post(
   "/",
   auth,
+
   [
     check("titulo", "Falta el campo tipo cuarto").not().isEmpty().isString(),
     check("username", "Falta el campo username").not().isEmpty().isString(),
@@ -61,6 +81,14 @@ router.post(
   ],
   RentasController.crearRenta
 );
+router.post(
+  "/uploadimages",
+  auth,
+  upload.array("imagenesrentas", 4),
+  RentasController.subirImagenes
+);
+router.get("/getimages/:id", RentasController.obtenerImagenes);
+
 router.get("/", RentasController.obtenerRentas);
 router.get("/user", auth, RentasController.obtenerRentasUsuario);
 

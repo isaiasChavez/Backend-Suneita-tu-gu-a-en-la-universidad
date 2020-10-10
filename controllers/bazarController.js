@@ -1,10 +1,18 @@
+const Usuario = require("../models/Usuario");
 const ProductoBazar = require("../models/ProductoBazarModel");
 const { validationResult } = require("express-validator");
-const Usuario = require("../models/Usuario");
+const cloudinary = require("cloudinary");
+const fs = require("fs-extra");
 
-exports.crearProducto = (req, res) => {
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+exports.crearProducto = async (req, res) => {
   console.log(req.body);
-  //Revisar si hay errores
+  // Revisar si hay errores
   const errores = validationResult(req);
   if (!errores.isEmpty()) {
     console.log(errores.array());
@@ -16,19 +24,45 @@ exports.crearProducto = (req, res) => {
 
   try {
     //Crear un nuevo poyecto
-    const producto = new ProductoBazar(req.body);
+    const { titulo } = req.body;
 
     //Guardar el creador via JWT, el que está autenticado
+    const producto = new ProductoBazar(req.body);
 
     producto.creador = req.usuario.id;
 
-    producto.save();
+    let urlFotos = [];
+    const result1 = await cloudinary.v2.uploader.upload(req.files[0].path);
+    const result2 = await cloudinary.v2.uploader.upload(req.files[1].path);
+    const result3 = await cloudinary.v2.uploader.upload(req.files[2].path);
+    urlFotos.push({
+      title: titulo,
+      imageUrl: result1.url,
+      public_id: result1.public_id,
+    });
+    urlFotos.push({
+      title: titulo,
+      imageUrl: result2.url,
+      public_id: result2.public_id,
+    });
+    urlFotos.push({
+      title: titulo,
+      imageUrl: result3.url,
+      public_id: result3.public_id,
+    });
+    producto.imagenes = urlFotos;
+
+    await producto.save();
     console.log("Creo que se ha guardado bien");
     res.json({ msg: "Se ha publicado con exito", producto });
   } catch (error) {
     console.log("Error:", error);
     res.status(500).send("Hubo un error al ingresar el producto");
   }
+
+  // console.log(result);
+
+  res.json({ msg: "Respuesta", res: req.body });
 };
 
 //Obtiene todos los proyectos del usuario que se encuentra autenticado

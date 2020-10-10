@@ -16,6 +16,14 @@ const ProductoBazarSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  imagenes: {
+    type: Array,
+    required: true,
+  },
+  created_at: {
+    type: Date,
+    default: Date.now(),
+  },
 });
 
 module.exports = mongoose.model("ProductoBazar", ProductoBazarSchema);

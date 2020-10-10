@@ -3,8 +3,9 @@ const { Mongoose } = require("mongoose");
 const mongoose = require("mongoose");
 require("dotenv").config({ path: "variables.env" });
 
-const URI =
-  "mongodb+srv://B4thSt1l3s:B4thSt1l3s@cluster0.2zhyg.mongodb.net/suneitaapp?retryWrites=true&w=majority";
+const URI = process.env.MONGODB_URI
+  ? process.env.MONGODB_URI
+  : "mongodb+srv://norela:d3sc4rt3s@cluster0.2zhyg.mongodb.net/suneitaapp?retryWrites=true&w=majority";
 
 const conectarDB = async () => {
   try {
