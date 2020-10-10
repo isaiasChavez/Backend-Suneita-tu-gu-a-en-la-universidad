@@ -2,7 +2,6 @@
 const express = require("express");
 const conectarDB = require("./config/database");
 const cors = require("cors");
-const morgan = require("morgan");
 
 //Configuración
 const app = express();
@@ -15,7 +14,6 @@ conectarDB();
 app.use(cors());
 app.use(express.json({ extended: true }));
 app.use(express.urlencoded({ extended: false }));
-app.use(morgan("dev"));
 
 //RUTAS
 app.use("/api/users", require("./routes/usuarios"));
